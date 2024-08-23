@@ -32,3 +32,14 @@ fi
 unset rc
 complete -C '/usr/local/bin/aws_completer' aws
 
+
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
+source ~/.bash_utils
+AWS_INFO=$(get_aws_info)
+
+# Update the PS1 variable to include AWS account ID and role name
+export PS1='\u@\h:\w \[${red}\]$AWS_INFO\[${reset}\]$ '
+

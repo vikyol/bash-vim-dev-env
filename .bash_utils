@@ -1,0 +1,56 @@
+get_aws_info() {
+  # Define cache file location
+  mkdir -p /tmp/aws_info_cache
+  cache_file="/tmp/aws_info_cache/$$"
+
+  # Define cache expiration time (in seconds)
+  cache_expiration=300
+
+  # Check if AWS credentials are set and valid
+  if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+    # Clear the cache if AWS credentials are not set
+    rm $cache_file
+    echo ""
+    return
+  fi
+
+  if [[ -n "$AWS_CREDENTIAL_EXPIRATION" ]]; then
+    current_time=$(date +%s)
+    expiration_time=$(date -d "$AWS_CREDENTIAL_EXPIRATION" +%s 2>/dev/null)
+
+    if [[ "$current_time" -gt "$expiration_time" ]]; then
+      # AWS credentials are expired; clear the cache
+      rm $cache_file
+      echo ""
+      return
+    fi
+  fi
+
+  # Check if cache file exists and is still valid
+  if [[ -f "$cache_file" && $(($(date +%s) - $(date +%s -r "$cache_file"))) -lt $cache_expiration ]]; then
+    # Read from cache file
+    cat "$cache_file"
+  else
+    # Fetch new AWS account ID and role name using AWS CLI
+    if command -v aws &> /dev/null; then
+      account_id=$(aws sts get-caller-identity --query "Account" --output text 2>/dev/null)
+      account_name=$(aws organizations describe-account --account-id $account_id --query 'Account.Name' --output text)
+      role_name=$(aws sts get-caller-identity --query "Arn" --output text 2>/dev/null | awk -F'/' '{print $(NF-1)}' | awk -F '_' '{print $(NF-1)}')
+
+      # Check if we successfully fetched the AWS info
+      if [[ -n "$account_name" && -n "$role_name" ]]; then
+        aws_info="[$account_name:$role_name]"
+        echo "$aws_info" > "$cache_file"
+        echo "$aws_info"
+      else
+        # Clear the cache file if unable to fetch AWS info
+        rm -f $cache_file
+        echo ""
+      fi
+    else
+      # Clear the cache file if AWS CLI is not installed
+      rm -f $cache_file
+      echo ""
+    fi
+  fi
+}
