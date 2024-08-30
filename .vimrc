@@ -1,12 +1,29 @@
-syntax on
-set tabstop=2 shiftwidth=2 expandtab
+" configure expanding of tabs for various file types
+au BufRead,BufNewFile *.py set expandtab
+au BufRead,BufNewFile *.c set noexpandtab
+au BufRead,BufNewFile *.h set noexpandtab
+au BufRead,BufNewFile Makefile* set noexpandtab
 
-" Tab Handling
-set tabstop=2
-set shiftwidth=2
+" --------------------------------------------------------------------------------
+" configure editor with tabs and nice stuff...
+" --------------------------------------------------------------------------------
+set expandtab           " enter spaces when tab is pressed
+set textwidth=120       " break lines when line length increases
+set tabstop=4           " use 4 spaces to represent tab
 set softtabstop=4
+set shiftwidth=4        " number of spaces to use for auto indent
+set autoindent          " copy indent from current line when starting a new line
+set smartindent
+set smarttab
 set expandtab
-set autoindent
+set number
+
+" make backspaces more powerfull
+set backspace=indent,eol,start
+
+set ruler               " show line and column number
+syntax on               " syntax highlighting
+
 
 " Don't highlight search keywords
 set nohls
@@ -39,3 +56,7 @@ nnoremap <C-j> <C-W><C-J>
 nnoremap <C-k> <C-W><C-K>
 nnoremap <C-l> <C-W><C-L>
 nnoremap <C-h> <C-W><C-H>
+
+nmap <C-N> :set invnumber<CR>
+
+colorscheme pablo
